@@ -1,44 +1,43 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Config } from '../../shared/config/env.config';
 
-import { Observable, of } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { Scientist } from './name-list.model';
 
 /**
  * This class provides the NameList service with methods to read names and add names.
  */
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class NameListService {
 
   /**
-   * Creates a new NameListService with the injected HttpClient.
-   * @param {HttpClient} http - The injected HttpClient.
+   * Creates a new NameListService with the injected Http.
+   * @param {Http} http - The injected Http.
    * @constructor
    */
-  constructor(private http: HttpClient) {}
+
+  private envUrl = Config.API + '/scientists';  // URL to web API
+
+  constructor(private http: HttpClient) { }
 
   /**
    * Returns an Observable for the HTTP GET request for the JSON resource.
    * @return {string[]} The Observable for the HTTP request.
    */
-  get(): Observable<string[]> {
-    return this.http.get<string[]>('assets/data.json')
-                    .pipe(
-    //                tap((data: string[]) => console.log('server data:', data)), // debug
-                      catchError(this.handleError));
+  getScientists(): Promise<Scientist[]> {
+
+    return this.http.get<Scientist[]>(this.envUrl)
+      .toPromise();
   }
 
-  /**
-    * Handle HTTP error
-    */
-  private handleError (error: any) {
-    // In a real world app, we might use a remote logging infrastructure
-    // We'd also dig deeper into the error to get a better message
-    const errMsg = (error.message) ? error.message :
-      error.status ? `${error.status} - ${error.statusText}` : 'Server error';
-    console.error(errMsg); // log to console instead
+  addScientist(name: string): Promise<Scientist> {
 
-    return of(errMsg);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json');
+
+    return this.http.post<Scientist>(this.envUrl, { name }, { headers: headers })
+      .toPromise();
   }
+
 }
 

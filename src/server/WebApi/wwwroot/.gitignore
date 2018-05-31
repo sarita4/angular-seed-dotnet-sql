@@ -1,0 +1,3 @@
+# This file is here so the empty wwwroot folder persists in Git.
+# The wwwroot folder has to exist in .NET Core API so it is recognized as a web app when deploying to Azure.
+# Stupid bug with .NET Core CLI Task in Release Management.

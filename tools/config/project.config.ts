@@ -13,8 +13,8 @@ export class ProjectConfig extends SeedConfig {
 
   constructor() {
     super();
-    // this.APP_TITLE = 'Put name of your app here';
-    // this.GOOGLE_ANALYTICS_ID = 'Your site's ID';
+    this.APP_TITLE = 'Ng Seed .NET SQL';
+    this.GOOGLE_ANALYTICS_ID = 'UA-100790637-1';  // IMPORTANT!!: PUT YOUR ID HERE OR REMOVE THIS LINE
 
     /* Enable typeless compiler runs (faster) between typed compiler runs. */
     // this.TYPED_COMPILE_INTERVAL = 5;

@@ -1,5 +1,6 @@
+import { NameListService } from './../shared/name-list/name-list.service';
+import { Scientist } from './../shared/name-list/name-list.model';
 import { Component, OnInit } from '@angular/core';
-import { NameListService } from '../shared/name-list/name-list.service';
 
 /**
  * This class represents the lazy loaded HomeComponent.
@@ -9,10 +10,11 @@ import { NameListService } from '../shared/name-list/name-list.service';
   selector: 'sd-home',
   templateUrl: 'home.component.html',
   styleUrls: ['home.component.css'],
+  providers: [NameListService]
 })
 export class HomeComponent implements OnInit {
 
-  newName = '';
+  newName: '';
   errorMessage: string;
   names: any[] = [];
 
@@ -22,7 +24,9 @@ export class HomeComponent implements OnInit {
    *
    * @param {NameListService} nameListService - The injected NameListService.
    */
-  constructor(public nameListService: NameListService) {}
+
+  public scientists: Scientist[];
+  constructor(public nameListService: NameListService) { }
 
   /**
    * Get the names OnInit
@@ -35,22 +39,22 @@ export class HomeComponent implements OnInit {
    * Handle the nameListService observable
    */
   getNames() {
-    this.nameListService.get()
-      .subscribe(
-        names => this.names = names,
+    this.nameListService.getScientists()
+      .then(
+        data => this.scientists = data,
         error => this.errorMessage = <any>error
       );
   }
 
-  /**
-   * Pushes a new name onto the names array
-   * @return {boolean} false to prevent default form submit behavior to refresh the page.
-   */
-  addName(): boolean {
-    // TODO: implement nameListService.post
-    this.names.push(this.newName);
+  addName() {
+    if (!this.newName) { return; }
+    this.nameListService.addScientist(this.newName)
+      .then(
+        scientist => this.scientists.push(scientist),
+        error => this.errorMessage = <any>error);
+
     this.newName = '';
-    return false;
+
   }
 
 }

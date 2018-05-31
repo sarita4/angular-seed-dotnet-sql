@@ -1,0 +1,73 @@
+<p align=right>Updated 5/5/2017</p>
+
+<p>Let's talk about how to build this project in Visual Studio Team Services (VSTS).  If you're not already familiar with the source code of this community project, free private projects in VSTS, and basic build defintion setup, please refer to these tutorials.</p>
+
+<ul>
+  <li>Source code on GitHub @ <a href="https://github.com/DaveSkender/angular-seed-dotnet-sql">https://github.com/DaveSkender/angular-seed-dotnet-sql</a></li>
+  <li><a href="https://www.visualstudio.com/en-us/docs/setup-admin/get-started">Getting started with Visual Studio Team Services (VSTS)</a></li>
+  <li><a href="https://www.visualstudio.com/en-us/docs/build/get-started/ci-cd-part-1">Setup a build definition in Team Services</a></li>
+</ul>
+
+<h2>Build setup</h2>
+
+<p>The overall goal of the build process in VSTS is to compile the Angular website, the ASP.NET Core API, and the SQL Server Database so that they're packaged in a format that's ready for deployment.  For the Angular website, if you want faster build times, you can opt to build "npm run build.prod" locally and check-in the artifacts (dist/prod folder) if you prefer.  Instead, we're going to do that step on the build server so we don't have to keep build artifacts in our repo.</p>
+
+<h3>Add your API URL to the website environment settings</h3>
+<p>The API URL is hardcoded in the website, so once you've <a [routerLink]="['/deploy']">setup your Azure environment</a> and know your final API location, you'll need to also update your repo environment settings file accordingly.</p>
+<img src="assets/img/build-hardcodedapi.png">
+
+<h3>Tasks</h3>
+<p>We'll be setting up the following build tasks.  We'll show you the settings for each of these one at a time.</p>
+<img src="assets/img/build-tasks.png">
+
+<h3>Get sources</h3>
+<p>First task: get the source code repo into a working area on the build server.  You'll have to point this to your own copy of the repo since there are unique environment settings in the Angular website (see above).</p>
+<img src="assets/img/build-tasks-getsources.png" width=900>
+
+<h3>Restore NuGet packages for Visual Studio Solution projects</h3>
+<p>There are other Tasks templates that do this.  We've opted for the .NET Core CLI.</p>
+<img src="assets/img/build-tasks-restoreNuGet.png" width=900>
+
+<h3>Build the Visual Studio Solution</h3>
+<p>to get binaries and database DACPAC schema file</p>
+<img src="assets/img/build-tasks-buildsolution.png" width=900>
+<p>you'll have to add values for these variables in the Variables tab</p>
+<img src="assets/img/build-variables.png">
+
+<h3>Package the .NET Core Web API</h3>
+<p>This builds and puts the artifacts for the API into a ZIP package.  The word "publish" here really means "package".  No deploying is done here.</p>
+<img src="assets/img/build-tasks-buildnetcore.png" width=900>
+
+<h3>Install website NPM packages</h3>
+<p>We don't have the node_modules folder in the repo, so you have to get NPM packages.</p>
+<img src="assets/img/build-tasks-npminstall.png" width=900>
+
+<h3>Build the website</h3>
+<p>We're showing the website build from the Seed tools for the Prod environment.  You could build a package for any environment.  This results in a ready-to-copy site in the "dist" folder in the working directory of the build server.</p>
+<img src="assets/img/build-tasks-npmbuild.png" width=900>
+
+<h3>Publish/save artifacts for API</h3>
+<p>Saves the prevously created artifacts for the API to the VSTS server.  We'll use these later to deploy.</p>
+<img src="assets/img/build-tasks-publishapi.png" width=900>
+
+<h3>Publish/save artifacts for Website and Database</h3>
+<p>Saves the prevously created artifacts for the website and database (DACPAC) to the VSTS server.  We'll use these later to deploy.</p>
+<img src="assets/img/build-tasks-publishdbweb.png" width=900>
+
+<h3>Update build options</h3>
+<p>Since we're using the latest Visual Studio 2017, we need to select a compatible [hosted] build agent.</p>
+<img src="assets/img/build-options.png" width=900>
+
+<h3>Execute a build</h3>
+<p>To make sure everything is working okay, run the build manually "queue new build ..." from the build Summary page.</p>
+<img src="assets/img/build-results.png" width=900>
+<p>If everything is okay, you should be able to view the artifacts we've saved to the VSTS Server with all three parts (website, api, and database).</p>
+<img src="assets/img/build-artifacts.png">
+
+<h3>Optionally, setup continuous integration build</h3>
+<p>If you'd like to automatically trigger a new build when code is merged to your master branch or when Pull Request is created, you can setup Triggers.  Optional.  You can always trigger manually.</p>
+<img src="assets/img/build-triggers.png">
+
+<hr>
+<p>Contribute.  If you'd like to improve this page or this site.  Fork our <a href="https://github.com/DaveSkender/angular-seed-dotnet-sql">public repo</a> and submit a Pull Request.</p>
+<p>Next steps: <a [routerLink]="['/deploy']">Deploy to an Azure environment</a></p>

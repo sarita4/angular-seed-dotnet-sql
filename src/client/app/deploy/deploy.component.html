@@ -1,0 +1,78 @@
+<p align=right>Updated 5/5/2017</p>
+
+<p>Now that we've successfully <a [routerLink]="['/build']">built our project and have a deployment package</a>, let's talk about using Microsoft Release Management to deploy from Visual Studio Team Services (VSTS) to Azure.</p>
+
+<h2>Azure setup</h2>
+<p>Before we can deploy, we'll need to setup some infrastructure on Azure Cloud Services.  First, let's add a PAAS Azure database and Azure App Service that will host both the Angular website and the .NET Core Web API.  If you're a newbie to Azure, here are a few links to get you started:</p>
+<ul>
+  <li><a href="https://azure.microsoft.com/en-us/free">Getting started with Azure for Free</a></li>
+  <li><a href="https://azure.microsoft.com/en-us/community/training">Azure training</a></li>
+</ul>
+
+<h3>Setup database</h3>
+<p>Add a new <a href="https://azure.microsoft.com/en-us/services/sql-database">Azure SQL database</a></p>
+<img src="assets/img/azure-database-new1.png">
+<p>Be sure to select an existing SQL Server or setup a new one.  Take note of Pricing Tier as well, this can burn your credits if you set it too high.  We've set ours to the lowest level since this is just a demo site.  You may choose whatever database name you like.</p>
+<img src="assets/img/azure-database-new2.png">
+
+<h3>Database connection strings</h3>
+<p>Once setup, go to the Overview section of the database blade (pane).  Select "Show database connection strings" and copy the text for later use when setting up the API Web App Service.</p>
+<img src="assets/img/azure-database-connectionstrings.png">
+
+<h3>Setup website</h3>
+<p>Add a new <a href="https://azure.microsoft.com/en-us/services/app-service/">Azure Web App / App Service</a> (PAAS)</p>
+<img src="assets/img/azure-app-new1.png">
+<p>You'll have to use your own <i>App name</i> for the URL, we've already taken this one.</p>
+<img src="assets/img/azure-app-new2.png">
+
+<h3>Add database connection strings for App</h3>
+<p>Azure allows you to store secret credentials and connection strings on the service so you don't have to put them in repo source code appsettings.json or web.config files.  From the "Database connection strings" section above, paste in a new Connection String that refers to our "AngularSeedDb" context name from the Web API.  Note, this name is not your database name.  Check Node.js version compatibility with the Seed App while you're in there.</p>
+<img src="assets/img/azure-app-connectionstrings.png">
+
+<h3>Add Virtual Directory for your API in the App</h3>
+<p>We will be hosting both the website and the API in the same App Service, so in addition to the default root website, we need to setup a second virtual directory for the API.</p>
+<img src="assets/img/azure-app-virtualdirectoryapi.png">
+
+<h3>Get credentials for remote FTP</h3>
+<p>If you have not already done so, add a login for remote FTP.  We'll use this later to deploy.  Note, this is not an App specific credential, so if you've set it up before for other Apps, you do not need to add or update again -- there is only one login per Azure account for all your subscriptions.</p>
+<img src="assets/img/azure-app-ftpcredentials.png">
+
+<h3>Take note of your FTP settings for the App</h3>
+<p>We'll be using FTP for parts of the deployment, so take note of the Azure FTP username and FTPS site for later.</p>
+<img src="assets/img/azure-app-ftpinfo.png">
+
+
+<hr>
+<h2>Deployment setup</h2>
+<p>If you're new to Release Management in Visual Studio Team Service (VSTS) or TFS, here's a good place to start: <a href="https://www.visualstudio.com/en-us/docs/build/get-started/ci-cd-part-1">CI/CD for dummies</a>.</p>
+
+<h3>Setup endpoints for Azure Subscription Resource Manager and FTP to App Service</h3>
+<p>You'll need to <a href="https://www.visualstudio.com/en-us/docs/build/concepts/library/service-endpoints">setup endpoint</a> Services in your VSTS Project level administrator settings area (find the gear icon in the menu bar); one for access to your Azure Subscription Resource Manager and one for FTP to your new App Service.  For the Azure Subcription endpoint, you may need to install or upgrade PowerShell on your computer and use the mentioned (see "setup endpoint" link) PowerShell script to set a Key value for the Subscription endpoint -- sometimes this is automatically registered, sometimes not.  Use Generic type and your FTP credentials (see above) for the FTP endpoint</p>
+<img src="assets/img/deploy-website-ftpendpoint.png">
+
+<h3>Create new Release definition in VSTS</h3>
+<p><img src="assets/img/deploy-new1.png"></p>
+<p>We'll be selecting our deployment package from the <a [routerLink]="['/build']">build definition</a> we created earlier.
+<br/>We'll setup three Tasks to deploy each part of our application.</p>
+<img src="assets/img/deploy-overview.png">
+
+<h3>Deploy database</h3>
+<p>Select the Azure RM Subscription endpoint we setup previously.  We'll add a bunch of custom variables here so these can be set differently for each environment that you may optionally include.  This also allows you to mask passwords.  Browse to the DACPAC file in your build Artifacts (you'll need a successful build before you can browse artifacts).</p>
+<img src="assets/img/deploy-database.png" width=900>
+<p>Don't forget to setup your variables.  You set these individually per environment from the ... menu.
+<br/>Use your unique database name, database server name, and database server level login credentials.</p>
+<img src="assets/img/deploy-environment-variables.png" width=700>
+
+<h3>Deploy website</h3>
+<p>The website deploy is a simple FTP upload of the dist/prod folder in your build artifacts.  Select the FTP endpoint setup previously.  Browse your artifacts to select the dist/prod folder.  I've also set "clean" here so all files and folder, including the api subfolder will be removed first, so this step should always proceed the API deployment step.  "Preserve file paths" is needed to keep the folder structure intact.</p>
+<img src="assets/img/deploy-website.png" width=900>
+
+<h3>Deploy API</h3>
+<p>Select the Azure RM Subscription we defined previously.  Choose the App Service target (your name will be different).  Type in the same Virtual Directory target that we defined in the Azure setup above.  Browse to the artifacts directory and select the WebApi.zip file.  I've chosen some "Additional Deployment Options" here to clean the API folder, though this is not needed given the cleaning we did earlier ... feel free to try alternatives here.</p>
+<img src="assets/img/deploy-api.png" width=900>
+
+<h3>Optionally, add continuous deployment triggers</h3>
+<p>If you'd like to automatically deploy after a successful build, turn on the triggers.  Or just manually trigger.  Lots of options here.</p>
+<img src="assets/img/deploy-triggers.png">
+<hr>
+<p>Contribute.  If you'd like to improve this page or this site.  Fork our <a href="https://github.com/DaveSkender/angular-seed-dotnet-sql">public repo</a> and submit a Pull Request.</p>

@@ -25,7 +25,7 @@
     "karma": "karma",
     "karma.start": "karma start",
     "postinstall": "gulp check.versions && gulp bundle.rxjs && gulp print.banner",
-    "reinstall": "npm cache clean && npm install",
+    "reinstall": "npm cache verify && npm install",
     "serve.coverage": "gulp serve.coverage --color",
     "serve.dev": "gulp serve.dev --color --env-config dev",
     "serve.prod": "gulp serve.prod --color --env-config prod --build-type prod",

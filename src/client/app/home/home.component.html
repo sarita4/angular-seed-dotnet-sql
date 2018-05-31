@@ -1,4 +1,5 @@
 <p>Howdy! Here's a list of awesome computer scientists. Do you know any others? Add to the list yourself.</p>
+<p>This data is coming from and storing to a Microsoft SQL Server through a .NET Core Web API.</p>
 
 <form (submit)="addName()">
   <input [(ngModel)]="newName" name="newName" placeholder="Awesome Computer Scientist">
@@ -6,5 +7,5 @@
 </form>
 
 <ul>
-  <li *ngFor="let name of names">{{ name }}</li>
+  <li *ngFor="let scientist of scientists">{{ scientist.name }}</li>
 </ul>
