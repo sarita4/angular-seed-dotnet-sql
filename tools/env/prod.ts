@@ -2,7 +2,7 @@ import { EnvConfig } from './env-config.interface';
 
 const ProdConfig: EnvConfig = {
   ENV: 'PROD',
-  API: 'https://angularseeddotnetsql.azurewebsites.net/api'
+  API: 'https://devopsapp2.azurewebsites.net/api'
 };
 
 export = ProdConfig;
